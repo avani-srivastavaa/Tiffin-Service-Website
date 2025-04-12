@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Order Confirmation</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .success-container {
+      background: #ffffff;
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      width: 90%;
+      max-width: 700px;
+      animation: fadeInUp 0.8s ease-out;
+      z-index: 1;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    h1 {
+      text-align: center;
+      color: #e65100;
+      margin-bottom: 10px;
+    }
+
+    .thankyou {
+      text-align: center;
+      font-size: 1.2em;
+      color: #555;
+      margin-bottom: 30px;
+    }
+
+    .summary, .customer-info {
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: #ff6f00;
+      margin-bottom: 10px;
+      border-bottom: 2px solid #ffe0b2;
+      padding-bottom: 5px;
+    }
+
+    table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+table th, table td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+table th:nth-child(1),
+table td:nth-child(1) {
+  text-align: left;
+}
+
+table th:nth-child(2),
+table td:nth-child(2){
+    text-align: right;
+    color: "black";
+}
+.total {
+  text-align: right;
+  font-weight: bold;
+  color: #d84315;
+}
+
+
+    .back-home {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .back-home a {
+      text-decoration: none;
+      background-color: #ff6f00;
+      color: white;
+      padding: 10px 25px;
+      border-radius: 8px;
+      transition: background 0.3s ease;
+    }
+
+    .back-home a:hover {
+      background-color: #e65100;
+    }
+    
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: #ff6f00;
+      opacity: 0.7;
+      animation: confetti-fall 3s linear infinite;
+      z-index: 0;
+    }
+
+    @keyframes confetti-fall {
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(800px) rotate(720deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="success-container">
+    <div style="text-align: center; font-size: 60px; color: green;">✅</div>
+    <h1>Order Successful!</h1>
+    <div class="thankyou">Thank you for ordering. Your delicious tiffin is on its way! 🍱</div>
+
+    <div class="summary">
+      <h2>Order Summary</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Item Name</th>
+            <th>Price (₹)</th>
+          </tr>
+        </thead>
+        <tbody id="orderItems"></tbody>
+        <tfoot>
+            <tr>
+              <td></td>
+              <td class="total" id="orderTotal">Total: ₹0</td>
+            </tr>
+          </tfoot>
+          
+      </table>
+    </div>
+
+    <div class="customer-info">
+      <h2>Customer Details</h2>
+      <table>
+        <tr><td><strong>Name:</strong></td><td id="custName"></td></tr>
+        <tr><td><strong>Phone:</strong></td><td id="custPhone"></td></tr>
+        <tr><td><strong>Email:</strong></td><td id="custEmail"></td></tr>
+        <tr><td><strong>Address:</strong></td><td id="custAddress"></td></tr>
+      </table>
+    </div>
+
+    <div class="back-home">
+      <a href="{{ url_for('home') }}">← Back to Home</a>
+    </div>
+  
+   
+  </div>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const orderCart = JSON.parse('{{ cart | tojson | safe }}');
+      const customerData = JSON.parse('{{ customer | tojson | safe }}');
+  
+      let total = 0;
+      const orderItemsContainer = document.getElementById("orderItems");
+  
+      orderCart.forEach(item => {
+        total += item.price;
+        orderItemsContainer.innerHTML += `<tr><td>${item.name}</td><td>₹${item.price}</td></tr>`;
+      });
+  
+      document.getElementById("orderTotal").innerText = `Total: ₹${total}`;
+      document.getElementById("custName").innerText = customerData.name;
+      document.getElementById("custPhone").innerText = customerData.phone;
+      document.getElementById("custEmail").innerText = customerData.email;
+      document.getElementById("custAddress").innerText = customerData.address;
+      for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = ['#ff6f00', '#ffa726', '#ffcc80', '#ffe0b2'][Math.floor(Math.random() * 4)];
+        confetti.style.animationDuration = 2 + Math.random() * 2 + 's';
+        confetti.style.width = confetti.style.height = Math.random() * 8 + 5 + 'px';
+        document.body.appendChild(confetti);
+      }
+    });
+    function goBackToHome() {
+        fetch("{{ url_for('go_back') }}", {
+            method: "POST"
+        })
+        .then(response => response.text())
+        .then(html => {
+            document.open();
+            document.write(html);
+            document.close();
+        });
+    }
+  </script>
+</body>
+</html>

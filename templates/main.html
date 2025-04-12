@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: #fff;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+        }
+        
+        /* Header Navigation */
+        header {
+            padding: 20px 0;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 22px;
+            font-weight: 600;
+            color: #FF8C00;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin: 0 20px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: 0.3s ease;
+            font-size: 15px;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: #FF8C00;
+        }
+        
+        .auth-links {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .auth-btn {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            font-size: 15px;
+            background-color: #fef1dc;
+            padding: 8px 15px;
+            border: 1px solid #FF8C00;
+            border-radius: 5px;
+            transition: 0.3s ease;
+        }
+        
+        .auth-btn:hover {
+            background-color: #FF8C00;
+            color: white;
+        }
+        html{
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    {% if category == 'success' %}
+    <p style="color: green; text-align: center; font-weight: 600; margin-top: 10px;">
+        {% else %}
+        <p style="color: red; text-align: center; font-weight: 600; margin-top: 10px;">
+            {% endif %}
+            {{ message }}
+        </p>
+    </p> 
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <span>🍱 TiffinSpin</span>
+                </div>
+                <div class="auth-links">
+                    {% if username %}
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span>👤 {{ username }}</span>
+                            <a href="/profile"><img src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png" alt="User" width="30" style="border-radius: 50%;"></a>
+                            <a href="/logout" class="auth-btn" style="margin-left: 10px;">Logout</a>
+                            <button onclick="showCart()" style="
+                            background-color: #FF8C00;
+                            color: white;
+                            border: none;
+                            padding: 8px 15px;
+                            border-radius: 5px;
+                            font-size: 14px;
+                            cursor: pointer;
+                        ">🛒 View Cart</button>            
+                        </div>
+                    {% else %}
+                        <button><a href="/register" class="auth-btn">Register</a></button>
+                        <button><a href="/login" class="auth-btn">Login</a></button>
+                    {% endif %}
+                </div>   
+                             
+            </nav>
+        </div>
+    </header>
+    <script>
+        let cart = [];
+        function addToCart(name, price, image) {
+            const loggedIn = "{{ 'user_id' in session }}";  // Inject Flask session status
+
+            if (loggedIn === "False") {
+                const choice = confirm("Please log in to add items to your cart.\nClick OK to Login.");
+                if (choice) {
+                    window.location.href = "/login";
+                } else {
+                    window.location.href = "/register";
+                }
+            } else {
+                cart.push({ name, price, image });
+                alert(`${name} added to cart!`);
+            }
+        }
+      
+        function showCart() {
+  if (cart.length === 0) {
+    alert("Your cart is empty!");
+    return;
+  }
+
+  let total = 0;
+
+  let cartHTML = `
+    <html>
+      <head>
+        <title>Your Cart</title>
+        <style>
+          body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #fffaf0;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+          }
+          h2 {
+            color: #ff6f00;
+            margin-bottom: 20px;
+            text-align: center;
+          }
+          ul {
+            list-style: none;
+            padding: 0;
+          }
+          li {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+          }
+          img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            margin-right: 15px;
+            object-fit: cover;
+            border: 2px solid #ffcc80;
+          }
+          .details {
+            flex-grow: 1;
+          }
+          .price {
+            font-weight: bold;
+            color: #e65100;
+          }
+          .total {
+            text-align: right;
+            font-size: 1.2em;
+            margin-top: 20px;
+            color: #d84315;
+          }
+          button {
+            background-color: #ff6f00;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            display: block;
+            margin-left: auto;
+          }
+          button:hover {
+            background-color: #e65100;
+          }
+        </style>
+      </head>
+      <body>
+        <h2>Your Cart</h2>
+        <ul>
+  `;
+
+  cart.forEach(item => {
+  cartHTML += `
+    <li>
+      <img src="${item.image}" alt="${item.name}">
+      <div class="details">
+        <div>${item.name}</div>
+        <div class="price">₹${item.price}</div>
+      </div>
+    </li>
+  `;
+  total += item.price;
+});
+
+  cartHTML += `
+        </ul>
+        <p class="total"><strong>Total: ₹${total}</strong></p>
+        <form method="POST" action="/order-now">
+          <input type="hidden" name="cart" value='${JSON.stringify(cart)}'>
+          <button type="submit">Order Now</button>
+        </form>
+      </body>
+    </html>
+  `;
+
+  const cartWin = window.open("", "Cart", "width=420,height=600");
+  cartWin.document.write(cartHTML);
+  cartWin.document.close();
+}
+      </script> 
+      {% if username %}
+      <button onclick="showCart()" style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #e67e22;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      ">🛒</button>
+    {% endif %}         
+</body>
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TiffinSpin - Fresh Indian Tiffin Service</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: #fff;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+        }
+        
+        /* Header Navigation */
+        header {
+            padding: 20px 0;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 22px;
+            font-weight: 600;
+            color: #FF8C00;
+        }
+        
+        .logo img {
+            margin-right: 8px;
+            width: 24px;
+            height: 24px;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin: 0 20px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: 0.3s ease;
+            font-size: 15px;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: #FF8C00;
+        }
+        
+        .cart-icon {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 85vh;
+            display: flex;
+            position: relative;
+            margin-bottom: 60px;
+        }
+        
+        .hero-bg {
+            position: absolute;
+            top: -100px;
+            right: -200px;
+            width: 800px;
+            height: 800px;
+            background-color: #FFF3E0;
+            border-radius: 50%;
+            z-index: -1;
+        }
+        
+        .hero-content {
+            width: 40%;
+            padding-top: 100px;
+        }
+        
+        .price {
+            font-size: 32px;
+            font-weight: 700;
+            color: #FF8C00;
+            margin-bottom: 10px;
+        }
+        
+        .dish-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+        
+        .dish-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        
+        .order-btn {
+            background-color: #FF8C00;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .order-btn:hover {
+            background-color: #e67e00;
+            transform: translateY(-2px);
+        }
+        
+        .food-carousel {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            width: 60%;
+            height: 500px;
+        }
+        
+        .main-dish {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 340px;
+            height: 340px;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            z-index: 5;
+        }
+        
+        .main-dish img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .orbit {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 500px;
+            border: 2px dashed rgba(255, 140, 0, 0.3);
+            border-radius: 50%;
+        }
+        
+        .small-dish {
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .small-dish img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .small-dish:hover {
+            transform: scale(1.1);
+        }
+        
+        .dish-1 {
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .dish-2 {
+            top: 20%;
+            right: 5%;
+        }
+        
+        .dish-3 {
+            bottom: 20%;
+            right: 5%;
+        }
+        
+        .dish-4 {
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .dish-5 {
+            bottom: 20%;
+            left: 5%;
+        }
+        
+        .dish-6 {
+            top: 20%;
+            left: 5%;
+        }
+        
+        .navigation-dots {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+        }
+        
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ddd;
+            margin: 0 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .dot.active {
+            background-color: #FF8C00;
+        }
+        
+        .arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background-color: #FF8C00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+        
+        .arrow-left {
+            left: 20px;
+        }
+        
+        .arrow-right {
+            right: 20px;
+        }
+        
+        /* Animation for the orbit */
+        @keyframes rotate {
+            0% {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            100% {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+        
+        .orbit-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 500px;
+            animation: rotate 40s linear infinite;
+        }
+
+        /* Popular Categories Section */
+        .categories-section {
+            padding: 50px 0;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .category-grid {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .category-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .category-icon {
+            width: 80px;
+            height: 80px;
+            background-color: #F5F5F5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .category-icon img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .category-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+        }
+
+        /* Menu Section */
+        .menu-section {
+            padding: 30px 0 60px 0;
+        }
+
+        .menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .menu-header .section-title {
+            margin-bottom: 0;
+        }
+
+        .view-all {
+            font-size: 14px;
+            color: #FF8C00;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .dish-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .dish-card {
+            background-color: #fff;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .dish-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .dish-image {
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
+        }
+
+        .dish-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .veg-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            background-color: #fff;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .veg-dot {
+            width: 12px;
+            height: 12px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+        }
+
+        .dish-info {
+            padding: 15px;
+        }
+
+        .dish-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .dish-price {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .price-tag {
+            font-size: 18px;
+            font-weight: 700;
+            color: #FF8C00;
+        }
+
+        .add-to-cart {
+            background-color: #E8F5E9;
+            color: #4CAF50;
+            font-weight: 600;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* Testimonials Section */
+        .testimonials-section {
+            padding: 60px 0;
+            background-color: #FAFAFA;
+        }
+
+        .testimonials-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chef-image {
+            width: 40%;
+            position: relative;
+        }
+
+        .chef-image img {
+            width: 100%;
+            border-radius: 20px;
+        }
+
+        .testimonials-text {
+            width: 55%;
+            padding-left: 40px;
+        }
+
+        .testimonial-header {
+            margin-bottom: 25px;
+        }
+
+        .testimonial-quote {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+        }
+
+        .ratings {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .star {
+            color: #FFD700;
+            margin-right: 2px;
+        }
+
+        /* Service Section */
+        .service-section {
+            padding: 60px 0;
+        }
+
+        .service-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .service-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+
+        .service-step {
+            width: 30%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .step-icon {
+            width: 60px;
+            height: 60px;
+            background-color: #E8F5E9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .step-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .step-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .service-cta {
+            text-align: center;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #f8f8f8;
+            padding: 50px 0 20px;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .footer-column {
+            width: 22%;
+        }
+
+        .footer-logo {
+            font-size: 20px;
+            font-weight: 600;
+            color: #FF8C00;
+            margin-bottom: 15px;
+        }
+
+        .footer-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .footer-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            text-decoration: none;
+            color: #666;
+            font-size: 14px;
+            transition: 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #FF8C00;
+        }
+
+        .social-icons {
+            display: flex;
+            margin-top: 15px;
+        }
+
+        .social-icon {
+            width: 32px;
+            height: 32px;
+            background-color: #f1f1f1;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+
+        .social-icon:hover {
+            background-color: #FF8C00;
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #999;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 992px) {
+            .hero-content {
+                width: 90%;
+                padding-top: 50px;
+                margin-bottom: 400px;
+            }
+            
+            .food-carousel {
+                width: 100%;
+                position: relative;
+                margin-top: 50px;
+            }
+            
+            .main-dish {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .orbit, .orbit-container {
+                width: 400px;
+                height: 400px;
+            }
+            
+            .small-dish {
+                width: 70px;
+                height: 70px;
+            }
+
+            .dish-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .testimonials-content {
+                flex-direction: column;
+            }
+
+            .chef-image, .testimonials-text {
+                width: 100%;
+            }
+
+            .testimonials-text {
+                padding-left: 0;
+                margin-top: 30px;
+            }
+
+            .service-steps {
+                flex-wrap: wrap;
+            }
+
+            .service-step {
+                width: 48%;
+                margin-bottom: 20px;
+            }
+
+            .footer-content {
+                flex-wrap: wrap;
+            }
+
+            .footer-column {
+                width: 48%;
+                margin-bottom: 30px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero-bg {
+                top: -50px;
+                right: -300px;
+                width: 600px;
+                height: 600px;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .hero-content {
+                width: 100%;
+                text-align: center;
+                padding-top: 30px;
+            }
+            
+            .dish-title {
+                font-size: 28px;
+            }
+            
+            .main-dish {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .orbit, .orbit-container {
+                width: 320px;
+                height: 320px;
+            }
+            
+            .small-dish {
+                width: 60px;
+                height: 60px;
+            }
+
+            .category-grid {
+                overflow-x: auto;
+                justify-content: flex-start;
+                padding-bottom: 15px;
+            }
+
+            .category-item {
+                min-width: 100px;
+            }
+
+            .dish-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .service-step {
+                width: 100%;
+            }
+
+            .footer-column {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hero Section with Rotating Food Animation -->
+    <section class="hero" id="hero">
+        <div class="hero-bg"></div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="price">₹199</div>
+                <h1 class="dish-title">Paneer Butter Masala Thali</h1>
+                <p class="dish-description">A delicious North Indian thali featuring creamy Paneer Butter Masala, served with dal, jeera rice, roti, raita, and pickle. A perfect balance of flavors for a complete meal.</p>
+                <button><a href="#menu-section" class="order-btn">ORDER NOW</a></button>
+            </div>
+            
+            <div class="food-carousel" id="food-carousel">
+                <div class="main-dish">
+                    <img src="static/thali.jpg" alt="Paneer Butter Masala Thali">
+                </div>
+                
+                <div class="orbit"></div>
+                <div class="orbit-container">
+                    <div class="small-dish dish-1">
+                        <img src="static/chole.jpg" alt="Chole Bhature">
+                    </div>
+                    <div class="small-dish dish-2">
+                        <img src="static/dosa.jpg" alt="Masala Dosa">
+                    </div>
+                    <div class="small-dish dish-3">
+                        <img src="static/biryani.jpg" alt="Veg Biryani">
+                    </div>
+                    <div class="small-dish dish-4">
+                        <img src="static/samosa.jpg" alt="Samosa">
+                    </div>
+                    <div class="small-dish dish-5">
+                        <img src="static/daal.jpg" alt="Dal Makhani">
+                    </div>
+                    <div class="small-dish dish-6">
+                        <img src="static/paratha.jpg" alt="Aloo Paratha">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<!-- Standard Dishes Section -->
+<section class="menu-section" id="menu-section">
+    <div class="container">
+        <div class="menu-header">
+            <h2 class="section-title">Standard Dishes From Our Menu</h2>
+        </div>
+        <div class="dish-grid">
+            <!-- Dish 1: Masala Dosa -->
+            <div class="dish-card">
+                <div class="dish-image">
+                    <img src="static/masala.jpeg" alt="Masala Dosa">
+                </div>
+                <div class="veg-badge">
+                    <div class="veg-dot"></div>
+                </div>
+                <div class="dish-info">
+                    <h3 class="dish-name">Masala Dosa</h3>
+                    <p class="dish-description">Crispy rice pancake filled with spiced potatoes</p>
+                    <div class="dish-price">
+                        <p class="price-tag">₹129</p>
+                        <button class="add-to-cart" onclick="addToCart('Masala Dosa', 129, 'static/masala.jpeg')">+ Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dish 2: Chole Bhature -->
+            <div class="dish-card">
+                <div class="dish-image">
+                    <img src="static/cb.jpg" alt="Chole Bhature">
+                </div>
+                <div class="veg-badge">
+                    <div class="veg-dot"></div>
+                </div>
+                <div class="dish-info">
+                    <h3 class="dish-name">Chole Bhature</h3>
+                    <p class="dish-description">Spicy chickpea curry with fried bread</p>
+                    <div class="dish-price">
+                        <p class="price-tag">₹149</p>
+                        <button class="add-to-cart" onclick="addToCart('Chole Bhature', 149, 'static/cb.jpg')">+ Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dish 3: Veg Pulao -->
+            <div class="dish-card">
+                <div class="dish-image">
+                    <img src="static/pulao.jpeg" alt="Veg Pulao">
+                </div>
+                <div class="veg-badge">
+                    <div class="veg-dot"></div>
+                </div>
+                <div class="dish-info">
+                    <h3 class="dish-name">Veg Pulao</h3>
+                    <p class="dish-description">Fragrant rice cooked with vegetables and spices</p>
+                    <div class="dish-price">
+                        <p class="price-tag">₹179</p>
+                        <button class="add-to-cart" onclick="addToCart('Veg Pulao', 179, 'static/pulao.jpeg')">+ Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dish 4: Veg Biryani -->
+            <div class="dish-card">
+                <div class="dish-image">
+                    <img src="static/biryani.jpg" alt="Veg Biryani">
+                </div>
+                <div class="veg-badge">
+                    <div class="veg-dot"></div>
+                </div>
+                <div class="dish-info">
+                    <h3 class="dish-name">Veg Biryani</h3>
+                    <p class="dish-description">Fragrant basmati rice cooked with spices and veggies</p>
+                    <div class="dish-price">
+                        <p class="price-tag">₹199</p>
+                        <button class="add-to-cart" onclick="addToCart('Veg Biryani', 199, 'static/biryani.jpg')">+ Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dish 5: Dal Makhani -->
+            <div class="dish-card">
+                <div class="dish-image">
+                    <img src="static/daal.jpg" alt="Dal Makhani">
+                </div>
+                <div class="veg-badge">
+                    <div class="veg-dot"></div>
+                </div>
+                <div class="dish-info">
+                    <h3 class="dish-name">Dal Makhani</h3>
+                    <p class="dish-description">Rich, creamy lentils cooked with spices</p>
+                    <div class="dish-price">
+                        <p class="price-tag">₹149</p>
+                        <button class="add-to-cart" onclick="addToCart('Dal Makhani', 149, 'static/daal.jpg')">+ Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dish 6: Samosa -->
+            <div class="dish-card">
+                <div class="dish-image">
+                    <img src="static/samosa.jpg" alt="Samosa">
+                </div>
+                <div class="veg-badge">
+                    <div class="veg-dot"></div>
+                </div>
+                <div class="dish-info">
+                    <h3 class="dish-name">Samosa</h3>
+                    <p class="dish-description">Crispy pastry filled with spiced potatoes</p>
+                    <div class="dish-price">
+                        <p class="price-tag">₹49</p>
+                        <button class="add-to-cart" onclick="addToCart('Samosa', 49, 'static/samosa.jpg')">+ Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dish 7: Paneer Butter Masala -->
+            <div class="dish-card">
+                <div class="dish-image">
+                    <img src="static/pbm.jpg" alt="Paneer Butter Masala">
+                </div>
+                <div class="veg-badge">
+                    <div class="veg-dot"></div>
+                </div>
+                <div class="dish-info">
+                    <h3 class="dish-name">Paneer Butter Masala</h3>
+                    <p class="dish-description">Soft paneer cooked in a rich, creamy tomato gravy</p>
+                    <div class="dish-price">
+                        <p class="price-tag">₹249</p>
+                        <button class="add-to-cart" onclick="addToCart('Paneer Butter Masala', 249, 'static/pbm.jpg')">+ Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dish 8: Aloo Paratha -->
+            <div class="dish-card">
+                <div class="dish-image">
+                    <img src="static/paratha.jpg" alt="Aloo Paratha">
+                </div>
+                <div class="veg-badge">
+                    <div class="veg-dot"></div>
+                </div>
+                <div class="dish-info">
+                    <h3 class="dish-name">Aloo Paratha</h3>
+                    <p class="dish-description">Flaky paratha stuffed with spiced mashed potatoes</p>
+                    <div class="dish-price">
+                        <p class="price-tag">₹79</p>
+                        <button class="add-to-cart" onclick="addToCart('Aloo Paratha', 79, 'static/paratha.jpg')">+ Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dish 9: Butter Chicken -->
+            <div class="dish-card">
+                <div class="dish-image">
+                    <img src="static/butter_chicken.jpg" alt="Butter Chicken">
+                </div>
+                <div class="veg-badge">
+                    <div class="veg-dot"></div>
+                </div>
+                <div class="dish-info">
+                    <h3 class="dish-name">Butter Chicken</h3>
+                    <p class="dish-description">Juicy chicken cooked in a creamy tomato gravy</p>
+                    <div class="dish-price">
+                        <p class="price-tag">₹299</p>
+                        <button class="add-to-cart" onclick="addToCart('Butter Chicken', 299, 'static/butter_chicken.jpg')">+ Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dish 10: Dhokla -->
+            <div class="dish-card">
+                <div class="dish-image">
+                    <img src="static/dhokla.jpg" alt="Dhokla">
+                </div>
+                <div class="veg-badge">
+                    <div class="veg-dot"></div>
+                </div>
+                <div class="dish-info">
+                    <h3 class="dish-name">Dhokla</h3>
+                    <p class="dish-description">Steamed savory cake made from rice and chickpea flour</p>
+                    <div class="dish-price">
+                        <p class="price-tag">₹69</p>
+                        <button class="add-to-cart" onclick="addToCart('Dhokla', 69, 'static/dhokla.jpg')">+ Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dish 11: Pani Puri -->
+            <div class="dish-card">
+                <div class="dish-image">
+                    <img src="static/pani_puri.jpg" alt="Pani Puri">
+                </div>
+                <div class="veg-badge">
+                    <div class="veg-dot"></div>
+                </div>
+                <div class="dish-info">
+                    <h3 class="dish-name">Pani Puri</h3>
+                    <p class="dish-description">Crispy puris filled with spicy tamarind water and potatoes</p>
+                    <div class="dish-price">
+                        <p class="price-tag">₹50</p>
+                        <button class="add-to-cart" onclick="addToCart('Pani Puri', 50, 'static/pani_puri.jpg')">+ Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dish 12: Rajma Chawal -->
+            <div class="dish-card">
+                <div class="dish-image">
+                    <img src="static/rajma_chawal.jpg" alt="Rajma Chawal">
+                </div>
+                <div class="veg-badge">
+                    <div class="veg-dot"></div>
+                </div>
+                <div class="dish-info">
+                    <h3 class="dish-name">Rajma Chawal</h3>
+                    <p class="dish-description">Kidney beans cooked in a spicy gravy, served with rice</p>
+                    <div class="dish-price">
+                        <p class="price-tag">₹139</p>
+                        <button class="add-to-cart" onclick="addToCart('Rajma Chawal', 139, 'static/rajma_chawal.jpg')">+ Add</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+    <!-- Testimonials Section -->
+    <section class="testimonials-section">
+        <div class="container">
+            <div class="testimonials-content">
+                <div class="chef-image">
+                    <img src="static/chef.jpeg" alt="Our Chef">
+                </div>
+                <div class="testimonials-text">
+                    <div class="testimonial-header">
+                        <h2 class="section-title">What Our Customers Say About Us</h2>
+                    </div>
+                    <div class="ratings">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                    <p class="testimonial-quote">"The food from TiffinSpin is absolutely delicious! Fresh ingredients, authentic flavors, and prompt delivery. Their daily tiffin service has made my busy workdays so much easier. Highly recommended!"</p>
+                    <div class="testimonial-author">
+                        <p>- Rahul Sharma, Regular Customer</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Service Process Section -->
+    <section class="service-section">
+        <div class="container">
+            <div class="service-header">
+                <h2 class="section-title">Our Delivery Journey And Services</h2>
+            </div>
+            <div class="service-steps">
+                <div class="service-step">
+                    <div class="step-icon">🍳</div>
+                    <h3 class="step-title">Fresh Cooking</h3>
+                    <p class="step-description">We prepare all meals fresh daily with high-quality ingredients</p>
+                </div>
+                <div class="service-step">
+                    <div class="step-icon">🚚</div>
+                    <h3 class="step-title">Fast Delivery</h3>
+                    <p class="step-description">Quick delivery to ensure your food arrives hot and fresh</p>
+                </div>
+                <div class="service-step">
+                    <div class="step-icon">😋</div>
+                    <h3 class="step-title">Enjoy Your Meal</h3>
+                    <p class="step-description">Savor authentic flavors in convenient packaging</p>
+                </div>
+            </div>
+            <div class="service-cta">
+                <button><a href="#menu-section" class="order-btn">ORDER NOW</a></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <div class="footer-logo">🍱 TiffinSpin</div>
+                    <p class="footer-description">Delivering fresh, homestyle Indian meals right to your doorstep every day.</p>
+                </div>
+                <div class="footer-column">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#menu-section">Menu</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3 class="footer-title">Contact Us</h3>
+                    <ul class="footer-links">
+                        <li>123 Food Street, Mumbai</li>
+                        <li>+91 9876543210</li>
+                        <li>info@tiffinspin.com</li>
+                        <li>9 AM - 8 PM, All Days</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 TiffinSpin. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

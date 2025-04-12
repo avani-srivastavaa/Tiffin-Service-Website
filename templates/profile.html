@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Customer Dashboard - Tiffin Services</title>
+  <style>
+    :root {
+      --primary: #ff6f00;
+      --accent: #fff3e0;
+      --light: #ffffff;
+      --bg: #fef9f4;
+      --shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(120deg, #fff3e0, #ffe0b2);
+      color: #333;
+    }
+
+    header {
+      background: linear-gradient(135deg, #ff6f00, #ff8f00);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+      box-shadow: 0 0 12px rgba(255, 111, 0, 0.5);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 2.5em;
+    }
+
+    .dashboard {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .profile-card {
+      background: var(--light);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px var(--shadow);
+      width: 100%;
+      max-width: 500px; 
+    }
+
+    .profile-img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin: auto;
+      margin-bottom: 20px;
+      border: 4px solid var(--primary);
+    }
+
+    .profile-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .profile-info p {
+      margin: 10px 0;
+      font-size: 1em;
+      border-bottom: 1px solid #ffe0b2;
+      padding-bottom: 8px;
+      text-align: left;
+    }
+
+    footer {
+      background-color: var(--accent);
+      color: #444;
+      text-align: center;
+      padding: 25px 15px;
+      font-size: 0.95em;
+      margin-top: 60px;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    @media (max-width: 900px) {
+      .dashboard {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Welcome, {{ user.name }}</h1>
+</header>
+<div class="dashboard">
+    <div class="profile-card">
+        <div class="profile-img">
+            <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Default Profile" />
+        </div>
+        <div class="profile-info">
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Phone:</strong> {{ user.phone }}</p>
+            <p><strong>Address:</strong> {{ user.address }}</p>
+            <p><strong>Region:</strong> {{ user.region }}</p>
+            <p><strong>Gender:</strong> {{ user.gender }}</p>
+        </div>
+        <footer>
+          &copy; 2025 Tiffin Services
+        </footer>
+    </div>
+</div>
+</body>
+</html>

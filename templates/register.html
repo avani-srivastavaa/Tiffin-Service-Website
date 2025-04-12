@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tiffin Box Service Registration</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+  
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  
+    @keyframes pulseBackground {
+      0% { background-color: #fff3e0; }
+      50% { background-color: #ffe0b2; }
+      100% { background-color: #fff3e0; }
+    }
+  
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom right, #fff3e0, #ffe0b2);
+      background-image: url('https://www.transparenttextures.com/patterns/cream-dust.png');
+      background-repeat: repeat;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      animation: pulseBackground 10s infinite alternate;
+    }
+  
+    .wrapper {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+  
+    .side-image {
+      width: 450px;
+      height: 400px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(255, 102, 0, 0.2);
+    }
+  
+    .side-image:first-of-type {
+      animation: slideInLeft 1.2s ease-out;
+    }
+  
+    .side-image:last-of-type {
+      animation: slideInRight 1.2s ease-out;
+    }
+  
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 5px 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(255, 102, 0, 0.2);
+      width: 500px;
+      animation: fadeIn 1s ease-out;
+    }
+  
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #ff6600;
+    }
+  
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #cc5500;
+    }
+  
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"],
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ffcc99;
+      border-radius: 4px;
+      background-color: #fff8f1;
+    }
+  
+    .gender-options {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+  
+    .gender-options label {
+      margin-right: 10px;
+      font-weight: normal;
+      color: #cc5500;
+    }
+  
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #ff6600;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+  
+    button:hover {
+      background: #e65c00;
+    }
+  
+    .login-link {
+      text-align: center;
+      margin-top: 10px;
+    }
+  
+    .login-link a {
+      color: #ff6600;
+      text-decoration: none;
+      font-size: 14px;
+    }
+  
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+  
+    .error {
+      color: red;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <img src="https://dinedelicious.in/wp-content/uploads/2020/07/Matar-Paneer-2-500x500.jpg" alt="Left Image" class="side-image">
+    <div class="container">
+      <h2><center>Register</center></h2>
+      <div id="errorMsg" class="error"></div>
+      <form id="registrationForm" action="/register" method="POST">
+        <label for="name">Full Name:</label>
+        <input type="text" id="name" name="name" placeholder="Enter your full name" required>
+       
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+       
+        <label for="phone">Phone Number:</label>
+        <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required>
+
+        <label for="region">Region (Maharashtra):</label>
+        <select id="region" name="region" required>
+          <option value="" disabled selected>Select your region</option>
+          <option value="Thane">Thane</option>
+          <option value="Raigad">Raigad</option>
+          <option value="Mumbai">Mumbai</option>
+          <option value="Pune">Pune</option>
+          <option value="Nagpur">Nagpur</option>
+        </select>
+
+        <label>Gender:</label>
+        <div class="gender-options">
+          <label><input type="radio" name="gender" value="Male" required> Male</label>
+          <label><input type="radio" name="gender" value="Female" required> Female</label>
+          <label><input type="radio" name="gender" value="Other" required> Other</label>
+        </div>
+
+        <label for="address">Address:</label>
+        <input type="text" id="address" name="address" placeholder="Enter your address" required>
+       
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+       
+        <label for="confirmPassword">Confirm Password:</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+       
+        <button type="submit">Register</button>
+      </form>
+      <div class="login-link">
+        <p>Already registered? <a href="/login">Login here</a></p>
+      </div>
+    </div>
+    <img src="https://prod-media.kidadl.com/52635225200_cde4512294_c_5cf007aae2.jpg" alt="Right Image" class="side-image">
+  </div>
+</body>
+</html>
