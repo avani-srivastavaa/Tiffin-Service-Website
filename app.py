@@ -9,7 +9,7 @@ app.secret_key = 'Avani@123'  # Add any random string here
 # Config MySQL
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'         # Your MySQL username
-app.config['MYSQL_PASSWORD'] = 'Ambadnya@108'         # Your MySQL password
+app.config['MYSQL_PASSWORD'] = 'password'         # Your MySQL password
 app.config['MYSQL_DB'] = 'swadisht'       # Your database name
 
 mysql = MySQL(app)
