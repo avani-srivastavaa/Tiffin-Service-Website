@@ -33,10 +33,6 @@ This project was built using **Python Flask** for the backend, **MySQL** as the 
 app.py → Main Flask app
 requirements.txt→ Python dependencies
 
-yaml
-Copy
-Edit
-
 
 ---
 
