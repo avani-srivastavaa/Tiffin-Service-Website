@@ -28,10 +28,10 @@ This project was built using **Python Flask** for the backend, **MySQL** as the 
 
 ## 📂 Folder Structure
 
-/static → images, icons, and assets
-/templates → HTML files for each page
-app.py → Main Flask app
-requirements.txt→ Python dependencies
+- /static → images, icons, and assets
+- /templates → HTML files for each page
+- app.py → Main Flask app
+- requirements.txt→ Python dependencies
 
 
 ---
