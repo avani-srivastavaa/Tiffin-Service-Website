@@ -10,18 +10,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "fallback-secret-key")
+app.secret_key = os.getenv("SECRET_KEY")
 
 # Function to get a new database connection
-def get_db_connection():
-    result = urlparse(os.environ.get("DATABASE_URL"))
-    return psycopg2.connect(
-        dbname=result.path[1:],
-        user=result.username,
-        password=result.password,
-        host=result.hostname,
-        port=result.port
-    )
+conn = psycopg2.connect(os.environ.get("DATABASE_URL"))
+# urlparse.uses_netloc.append("postgres")
+# db_url = os.environ.get("DATABASE_URL")
+
+# conn = psycopg2.connect(db_url)
+
 
 @app.route('/')
 def home():
