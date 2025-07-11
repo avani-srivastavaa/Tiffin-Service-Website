@@ -5,14 +5,9 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     plan: free
+    pythonVersion: 3.11.9
     envVars:
-      - key: MYSQL_HOST
-        value: your-remote-mysql-host
-      - key: MYSQL_USER
-        value: your-mysql-username
-      - key: MYSQL_PASSWORD
-        value: your-mysql-password
-      - key: MYSQL_DB
-        value: swadisht
-      - key: SECRET_KEY
-        value: your-secret-key
+      - key: DATABASE_URL
+        value: "postgresql://postgres.ayekeqjyfelqlarclfod:Tiffin#12D*@aws-0-ap-south-1.pooler.supabase.com:6543/postgres"
+      - key: secrecy-at-its-peak
+        value: Avani@123
