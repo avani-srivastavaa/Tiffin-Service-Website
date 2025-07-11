@@ -1,18 +1,24 @@
-from flask import Flask, render_template, request, redirect, url_for,  flash, session
-from flask_mysqldb import MySQL
-import MySQLdb.cursors
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+import psycopg2
+import psycopg2.extras
+from urllib.parse import urlparse
+import os
+import json
+
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'Avani@123'  # Add any random string here
+app.secret_key = os.environ.get('SECRET_KEY')
 
+# PostgreSQL Configuration
+DB_HOST = os.environ.get('DB_HOST')
+DB_NAME = os.environ.get('DB_NAME')
+DB_USER = os.environ.get('DB_USER')
+DB_PASSWORD = os.environ.get('DB_PASSWORD')
 
-# Config MySQL
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'         # Your MySQL username
-app.config['MYSQL_PASSWORD'] = 'password'         # Your MySQL password
-app.config['MYSQL_DB'] = 'swadisht'       # Your database name
-
-mysql = MySQL(app)
+def get_db_connection():
+    return psycopg2.connect(os.environ.get('DATABASE_URL'))
 
 @app.route('/')
 def home():
@@ -26,7 +32,6 @@ def logout():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        # Get form data
         name = request.form['name']
         email = request.form['email']
         phone = request.form['phone']
@@ -35,20 +40,21 @@ def register():
         address = request.form['address']
         password = request.form['password']
         confirm_password = request.form['confirmPassword']
-        
+
         if password != confirm_password:
             return "Passwords do not match!"
 
-        # Insert into DB
-        cursor = mysql.connection.cursor()
-        cursor.execute("""
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
             INSERT INTO users (name, email, phone, region, gender, address, password)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
         """, (name, email, phone, region, gender, address, password))
-        mysql.connection.commit()
-        cursor.close()
+        conn.commit()
+        cur.close()
+        conn.close()
 
-        return redirect(url_for('home'))  # Redirect to home or login
+        return redirect(url_for('home'))
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -57,10 +63,12 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute("SELECT * FROM users WHERE name = %s", (username,))
         user = cur.fetchone()
         cur.close()
+        conn.close()
 
         if user:
             if password == user['password']:
@@ -80,37 +88,37 @@ def login():
 def profile():
     if 'loggedin' in session:
         username = session['username']
-        cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute("SELECT * FROM users WHERE name = %s", (username,))
-        user = cur.fetchone()  # Get the user data
-
+        user = cur.fetchone()
         cur.close()
-
+        conn.close()
         return render_template('profile.html', user=user)
     else:
         flash('Please log in first!', 'error')
         return redirect('/login')
-
 
 @app.route('/order-now', methods=['POST'])
 def order_now():
     if 'loggedin' not in session:
         return redirect('/login')
 
-    import json
     cart = json.loads(request.form['cart'])
     user_id = session['user_id']
 
-    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cur.execute("SELECT name, phone, email, address FROM users WHERE id = %s", (user_id,))
     user_details = cur.fetchone()
     cur.close()
+    conn.close()
+
     return render_template('order_now.html', cart=cart, customer=user_details)
 
 @app.route('/go-back', methods=['POST'])
 def go_back():
     return render_template('main.html')
-
 
 if __name__ == '__main__':
     app.run(debug=True)
