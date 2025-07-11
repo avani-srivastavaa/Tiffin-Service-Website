@@ -12,8 +12,13 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
 
-# Function to get a new database connection
-conn = psycopg2.connect(os.environ.get("DATABASE_URL"))
+def get_db_connection():
+    return psycopg2.connect(os.environ.get("DATABASE_URL"), cursor_factory=psycopg2.extras.RealDictCursor)
+
+
+
+# # Function to get a new database connection
+# conn = psycopg2.connect(os.environ.get("DATABASE_URL"))
 # urlparse.uses_netloc.append("postgres")
 # db_url = os.environ.get("DATABASE_URL")
 
@@ -47,7 +52,7 @@ def register():
 
         try:
             conn = get_db_connection()
-            cur = conn.cursor()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             cur.execute("""
                 INSERT INTO users (name, email, phone, region, gender, address, password)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -71,7 +76,7 @@ def login():
         password = request.form['password']
 
         conn = get_db_connection()
-        cur = conn.cursor()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cur.execute("SELECT * FROM users WHERE name = %s", (username,))
         user = cur.fetchone()
         cur.close()
@@ -98,7 +103,7 @@ def profile():
         return redirect('/login')
 
     conn = get_db_connection()
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute("SELECT * FROM users WHERE name = %s", (session['username'],))
     user = cur.fetchone()
     cur.close()
@@ -115,7 +120,7 @@ def order_now():
     user_id = session['user_id']
 
     conn = get_db_connection()
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute("SELECT name, phone, email, address FROM users WHERE id = %s", (user_id,))
     user_details = cur.fetchone()
     cur.close()
