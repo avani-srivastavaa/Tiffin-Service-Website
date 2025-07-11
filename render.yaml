@@ -9,5 +9,5 @@ services:
     envVars:
       - key: DATABASE_URL
         value: "postgresql://postgres.ayekeqjyfelqlarclfod:Tiffin#12D*@aws-0-ap-south-1.pooler.supabase.com:6543/postgres"
-      - key: secrecy-at-its-peak
-        value: Avani@123
+      - key: SECRET_KEY
+        value: secrecy-at-its-peak
