@@ -14,13 +14,13 @@ app.secret_key = os.getenv("SECRET_KEY", "fallback-secret-key")
 
 # Function to get a new database connection
 def get_db_connection():
+    result = urlparse(os.environ.get("DATABASE_URL"))
     return psycopg2.connect(
-        dbname=os.getenv("DB_NAME"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        host=os.getenv("DB_HOST"),
-        port=os.getenv("DB_PORT"),
-        cursor_factory=psycopg2.extras.DictCursor
+        dbname=result.path[1:],
+        user=result.username,
+        password=result.password,
+        host=result.hostname,
+        port=result.port
     )
 
 @app.route('/')
