@@ -4,21 +4,24 @@ import psycopg2.extras
 from urllib.parse import urlparse
 import os
 import json
-
 from dotenv import load_dotenv
+
+# Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY')
+app.secret_key = os.getenv("SECRET_KEY", "fallback-secret-key")
 
-# PostgreSQL Configuration
-DB_HOST = os.environ.get('DB_HOST')
-DB_NAME = os.environ.get('DB_NAME')
-DB_USER = os.environ.get('DB_USER')
-DB_PASSWORD = os.environ.get('DB_PASSWORD')
-
+# Function to get a new database connection
 def get_db_connection():
-    return psycopg2.connect(os.environ.get('DATABASE_URL'))
+    return psycopg2.connect(
+        dbname=os.getenv("DB_NAME"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        host=os.getenv("DB_HOST"),
+        port=os.getenv("DB_PORT"),
+        cursor_factory=psycopg2.extras.DictCursor
+    )
 
 @app.route('/')
 def home():
@@ -42,19 +45,26 @@ def register():
         confirm_password = request.form['confirmPassword']
 
         if password != confirm_password:
-            return "Passwords do not match!"
+            flash("Passwords do not match!", 'error')
+            return redirect('/register')
 
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("""
-            INSERT INTO users (name, email, phone, region, gender, address, password)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (name, email, phone, region, gender, address, password))
-        conn.commit()
-        cur.close()
-        conn.close()
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO users (name, email, phone, region, gender, address, password)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (name, email, phone, region, gender, address, password))
+            conn.commit()
+        except Exception as e:
+            flash(f"Error: {e}", 'error')
+        finally:
+            cur.close()
+            conn.close()
 
-        return redirect(url_for('home'))
+        flash('Registration successful!', 'success')
+        return redirect(url_for('login'))
+
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -64,7 +74,7 @@ def login():
         password = request.form['password']
 
         conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur = conn.cursor()
         cur.execute("SELECT * FROM users WHERE name = %s", (username,))
         user = cur.fetchone()
         cur.close()
@@ -86,18 +96,18 @@ def login():
 
 @app.route('/profile')
 def profile():
-    if 'loggedin' in session:
-        username = session['username']
-        conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        cur.execute("SELECT * FROM users WHERE name = %s", (username,))
-        user = cur.fetchone()
-        cur.close()
-        conn.close()
-        return render_template('profile.html', user=user)
-    else:
+    if 'loggedin' not in session:
         flash('Please log in first!', 'error')
         return redirect('/login')
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE name = %s", (session['username'],))
+    user = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    return render_template('profile.html', user=user)
 
 @app.route('/order-now', methods=['POST'])
 def order_now():
@@ -108,7 +118,7 @@ def order_now():
     user_id = session['user_id']
 
     conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = conn.cursor()
     cur.execute("SELECT name, phone, email, address FROM users WHERE id = %s", (user_id,))
     user_details = cur.fetchone()
     cur.close()
